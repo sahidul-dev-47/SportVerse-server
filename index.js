@@ -63,6 +63,13 @@ async function run() {
       }
     });
 
+    // GET FEATURED FACILITY
+
+    app.get('/featured',async (req, res)=> {
+      const result = await facilitiesCollection.find().limit(6).toArray()
+      res.send(result)
+    })
+
     // =========================
     // GET SINGLE FACILITY
     // =========================
