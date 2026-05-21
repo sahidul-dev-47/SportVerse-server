@@ -91,31 +91,41 @@ async function run() {
     
     // GET ALL FACILITIES
 
+app.get("/facilities", async (req, res) => {
+  try {
+    const { ownerEmail, search, category } = req.query;
 
-    app.get("/facilities", async (req, res) => {
-      try {
-        const { ownerEmail } = req.query;
+    let query = {};
 
-        let query = {};
+    if (ownerEmail) {
+      query.ownerEmail = ownerEmail.trim().toLowerCase();
+    }
 
-        if (ownerEmail) {
-          query.ownerEmail =
-            ownerEmail.trim().toLowerCase();
-        }
+    if (search && search.trim() !== "") {
+      query.$or = [
+        { facilityName: { $regex: search.trim(), $options: "i" } },
+        { location: { $regex: search.trim(), $options: "i" } },
+        { description: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
 
-        const result =
-          await facilitiesCollection.find(query).toArray();
+    if (category && category !== "All") {
+      query.facilityType = category;
+    }
 
-        res.send(result);
-      } catch (error) {
-        console.error(error);
+    const result = await facilitiesCollection
+      .find(query)
+      .sort({ createdAt: -1 })    
+      .toArray();
 
-        res.status(500).send({
-          message: "Server Error",
-        });
-      }
+    res.send(result);
+  } catch (error) {
+    console.error("GET FACILITIES ERROR:", error);
+    res.status(500).send({
+      message: "Server Error"
     });
-
+  }
+});
     
     // GET FEATURED FACILITIES
     
